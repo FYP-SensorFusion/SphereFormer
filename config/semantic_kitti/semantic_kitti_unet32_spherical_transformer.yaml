@@ -1,10 +1,10 @@
 DATA:
   data_name: semantic_kitti
-  data_root: YOUR_DATA_ROOT/SemanticKITTI/dataset ## Fill in the data path 
+  data_root: SemanticKITTI/dataset ## Fill in the data path 
   label_mapping: util/semantic-kitti.yaml
   classes: 19
   fea_dim: 6
-  voxel_size: [0.05, 0.05, 0.05]
+  voxel_size: [0.1, 0.1, 0.1]
   voxel_max: 120000 
 
 TRAIN:
@@ -47,12 +47,12 @@ TRAIN:
 
   power: 0.9
   use_amp: True
-  train_gpu: [0,1,2,3] 
-  workers: 16  # data loader workers 
-  batch_size: 8 # batch size for training
-  batch_size_val: 8 # batch size for validation during training, memory and speed tradeoff
+  train_gpu: [0] 
+  workers: 4  # data loader workers 
+  batch_size: 2 # batch size for training
+  batch_size_val: 2 # batch size for validation during training, memory and speed tradeoff
   base_lr: 0.006 
-  epochs: 50 
+  epochs: 10 
   start_epoch: 0
   momentum: 0.9
   weight_decay: 0.02 
@@ -63,8 +63,8 @@ TRAIN:
   print_freq: 10
   save_freq: 1
   save_path: runs/semantic_kitti_unet32_spherical_transformer
-  weight:  # path to initial weight (default: none)
-  resume:  # path to latest checkpoint (default: none)
+  weight: weight/semantic_kitti_unet32_spherical_transformer # path to initial weight (default: none)
+  resume: checkpoint/semantic_kitti_unet32_spherical_transformer # path to latest checkpoint (default: none)
   evaluate: True  # evaluate on validation set, extra gpu memory needed and small batch_size_val is recommend
   eval_freq: 1
   val: False

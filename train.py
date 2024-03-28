@@ -18,6 +18,7 @@ import torch.utils.data
 import torch.multiprocessing as mp
 import torch.distributed as dist
 import torch.optim.lr_scheduler as lr_scheduler
+from torch.quantization import quantize_dynamic
 from tensorboardX import SummaryWriter
 
 from util import config, transform
@@ -62,10 +63,7 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(str(x) for x in args.train_gpu)
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
-    # import torch.backends.mkldnn
-    # ackends.mkldnn.enabled = False
-    # os.environ["LRU_CACHE_CAPACITY"] = "1"
-    # cudnn.deterministic = True
+
     if args.manual_seed is not None:
         random.seed(args.manual_seed)
         np.random.seed(args.manual_seed)
@@ -74,10 +72,13 @@ def main():
         torch.cuda.manual_seed_all(args.manual_seed)
         cudnn.benchmark = False
         cudnn.deterministic = True
+
     if args.dist_url == "env://" and args.world_size == -1:
         args.world_size = int(os.environ["WORLD_SIZE"])
+
     args.distributed = args.world_size > 1 or args.multiprocessing_distributed
     args.ngpus_per_node = len(args.train_gpu)
+    
     if len(args.train_gpu) == 1:
         args.sync_bn = False
         args.distributed = False
@@ -494,7 +495,6 @@ def train(train_loader, model, criterion, optimizer, epoch, scaler, scheduler, g
         
         use_amp = args.use_amp
         with torch.cuda.amp.autocast(enabled=use_amp):
-            
             output = model(sinput, xyz, batch)
             assert output.shape[1] == args.classes
 
