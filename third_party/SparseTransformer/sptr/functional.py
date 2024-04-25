@@ -15,9 +15,12 @@ class AttentionStep1(Function):
         """
         assert q.is_contiguous() and k.is_contiguous() and index0_offsets.is_contiguous() and index1.is_contiguous()
 
+
         N_q, h, hdim = q.shape
         N_k = k.shape[0]
         M = index1.shape[0]
+
+        print(N_q, h, hdim, N_k, M)
 
         output = torch.cuda.FloatTensor(h, M).zero_()
 
@@ -35,7 +38,7 @@ class AttentionStep1(Function):
             print("attn_step1: forward time: {}s, M: {}".format(time.time() - t, M))
 
         output = output.permute(1,0).contiguous()
-
+        print("self_attention_1_forward_output", output)
         ctx.N_q = N_q
         ctx.N_k = N_k
         ctx.n_max = n_max
@@ -72,7 +75,7 @@ class AttentionStep1(Function):
         if DEBUG:
             torch.cuda.synchronize()
             print("attn_step1: backward time: {}s, M: {}".format(time.time() - t, M))
-
+        print ("self_attention_1_backward_output", grad_q, grad_k,)
         return grad_q, grad_k, None, None, None, None, None
 
 attention_step1 = AttentionStep1.apply
@@ -93,9 +96,11 @@ class AttentionStep2(Function):
         if DEBUG:
             torch.cuda.synchronize()
             t = time.time()
-            
+
         output = torch.cuda.FloatTensor(N, h, hdim).zero_()
         
+        print("self_attention_2_forward_inputs", N, M, h, hdim, n_max, attn, v, index0_offsets, index1, output)
+
         assert attn.shape[1] == h
         assert 512 % hdim == 0
         
@@ -107,6 +112,9 @@ class AttentionStep2(Function):
 
         ctx.n_max = n_max
         ctx.save_for_backward(attn, v, index0, index0_offsets, index1, index1_offsets)
+
+        print("self_attention_2_forward_output", output)
+
         return output
 
     @staticmethod
@@ -138,6 +146,8 @@ class AttentionStep2(Function):
         if DEBUG:
             torch.cuda.synchronize()
             print("attn_step2: backward time: {}s, M: {}, h: {}".format(time.time() - t, M, h))
+        
+        print ("self_attention_2_backward_output", grad_attn, grad_v)
 
         return grad_attn, grad_v, None, None, None, None, None
 

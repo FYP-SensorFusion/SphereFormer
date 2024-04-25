@@ -44,6 +44,8 @@ def sparse_self_attention(query,
         xyz_quant = torch.div(xyz_quant, torch.from_numpy(quant_size).float().cuda(), rounding_mode='floor') #[N, 3]
         relative_position = xyz_quant[index_0.long()] - xyz_quant[index_1.long()] #[M, 3]
         relative_position_index = relative_position + quant_grid_length - 1
+
+
         if split_func:
             relative_position_index = split_func(xyz_ctg, index_0, index_1, relative_position_index.clone())
             relative_position_index = torch.clamp(relative_position_index, 0, 2*quant_grid_length-1)

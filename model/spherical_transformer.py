@@ -4,7 +4,7 @@ import numpy as np
 import numbers
 from functools import partial
 from timm.models.layers import DropPath, trunc_normal_
-from third_party.SparseTransformer.sptr import to_3d_numpy, SparseTrTensor, sparse_self_attention, get_indices_params
+from third_party.SparseTransformer.sptr import to_3d_numpy, SparseTrTensor, sparse_self_attention, get_indices_params, get_indices_params_ellipsoidal
 
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
@@ -164,11 +164,13 @@ class SparseMultiheadSASphereConcat(nn.Module):
         qkv = self.qkv(query).reshape(N, 3, self.num_heads, C // self.num_heads).permute(1, 0, 2, 3).contiguous()
         query, key, value = qkv[0], qkv[1], qkv[2] #[N, num_heads, C//num_heads]
         query = query * self.scale
+        # print(self.window_size)
+        # print(self.window_size_sphere)
 
         xyz_sphere = cart2sphere(xyz)
         index_params = sptr_tensor.find_indice_params(self.indice_key)
         if index_params is None:
-            index_0, index_0_offsets, n_max, index_1, index_1_offsets, sort_idx = get_indices_params(
+            index_0, index_0_offsets, n_max, index_1, index_1_offsets, sort_idx = get_indices_params_ellipsoidal(
                 xyz, 
                 batch, 
                 self.window_size, 

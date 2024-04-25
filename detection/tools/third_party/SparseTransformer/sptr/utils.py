@@ -46,6 +46,42 @@ def grid_sample(pos, batch, size, start, return_p2v=True, return_counts=True, re
 
     return cluster, p2v_map, counts
 
+def grid_sample_ellipsoidal(pos, batch, size, start, return_p2v=True, return_counts=True, return_unique=False):
+    # pos: float [N, 3]
+    # batch: long [N]
+    # size: float [3, ]
+    # start: float [3, ] / None
+    # print("=============pos==================",pos)
+
+    cluster = voxel_grid_ellipsoidal(pos, batch, size, start=start) #[N, ]
+
+    if return_p2v == False and return_counts == False:
+        unique, cluster = torch.unique(cluster, sorted=True, return_inverse=True)
+        # unique2, cluster2 = torch.unique(cluster2, sorted=True, return_inverse=True)
+        # print("unique _ cluster ",unique.shape, cluster.shape)
+        # print("unique _ cluster 2 ",unique2.shape, cluster2.shape)
+        return cluster
+
+    unique, cluster, counts = torch.unique(cluster, sorted=True, return_inverse=True, return_counts=True)
+    # unique2, cluster2, counts2 = torch.unique(cluster2, sorted=True, return_inverse=True, return_counts=True)
+    # print("unique _ cluster _ count",unique.shape, cluster.shape, counts.shape)
+    # print("unique _ cluster _ count 2",unique2.shape, cluster2.shape, counts2.shape)
+
+    if return_p2v == False and return_counts == True:
+        return cluster, counts.max().item(), counts
+
+    # obtain p2v_map
+    n = unique.shape[0]
+    k = counts.max().item()
+    p2v_map = cluster.new_zeros(n, k) #[n, k]
+    mask = torch.arange(k).cuda().unsqueeze(0) < counts.unsqueeze(-1) #[n, k]
+    p2v_map[mask] = torch.argsort(cluster)
+
+    if return_unique:
+        return cluster, p2v_map, counts, unique
+
+    return cluster, p2v_map, counts
+
 def get_indices_params(xyz, batch, window_size, shift_win: bool):
     
     if isinstance(window_size, list) or isinstance(window_size, np.ndarray):
@@ -65,6 +101,33 @@ def get_indices_params(xyz, batch, window_size, shift_win: bool):
 
     n_max = k
     index_0_offsets, index_1_offsets, index_0, index_1 = precompute_all(N, n, n_max, counts)
+    index_0 = index_0.long()
+    index_1 = index_1.long()
+
+    return index_0, index_0_offsets, n_max, index_1, index_1_offsets, sort_idx
+
+def get_indices_params_ellipsoidal(xyz, batch, window_size, shift_win: bool):
+    
+    if isinstance(window_size, list) or isinstance(window_size, np.ndarray):
+        window_size = torch.from_numpy(window_size).type_as(xyz).to(xyz.device)
+    else:
+        window_size = torch.tensor([window_size]*3).type_as(xyz).to(xyz.device)
+    # print("========xyz=============",xyz)
+    if shift_win:
+        v2p_map, k, counts = grid_sample_ellipsoidal(xyz+1/2*window_size, batch, window_size, start=xyz.min(0)[0], return_p2v=False, return_counts=True)
+    else:
+        v2p_map, k, counts = grid_sample_ellipsoidal(xyz, batch, window_size, start=None, return_p2v=False, return_counts=True)
+
+    v2p_map, sort_idx = v2p_map.sort()
+
+    n = counts.shape[0]
+    N = v2p_map.shape[0]
+
+    n_max = k
+    # print(v2p_map)
+    # print(N,n, n_max, counts)
+    index_0_offsets, index_1_offsets, index_0, index_1 = precompute_all(N, n, n_max, counts)
+    # print(index_0_offsets, index_1_offsets, index_0, index_1)
     index_0 = index_0.long()
     index_1 = index_1.long()
 

@@ -20,6 +20,12 @@ setup(
             'src/sptr/precompute/precompute_cuda_kernel.cu',
             'src/sptr/rpe/relative_pos_encoding_cuda.cpp',
             'src/sptr/rpe/relative_pos_encoding_cuda_kernel.cu',
+            'src/sptr/radial_grid/radial_grid_cuda.cpp',
+            'src/sptr/radial_grid/radial_grid_cuda_kernel.cu',
+            'src/sptr/grid_cluster/grid_cluster_cuda.cpp',
+            'src/sptr/grid_cluster/grid_cluster_cuda_kernel.cu',
+            'src/sptr/ellipsoidal_cluster/ellipsoidal_cluster_cuda.cpp',
+            'src/sptr/ellipsoidal_cluster/ellipsoidal_cluster_cuda_kernel.cu',
             ],
         extra_compile_args={'cxx': ['-g'], 'nvcc': ['-O2']}
         )

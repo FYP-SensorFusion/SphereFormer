@@ -4,7 +4,9 @@
 #include "attention/attention_cuda_kernel.h"
 #include "rpe/relative_pos_encoding_cuda_kernel.h"
 #include "precompute/precompute_cuda_kernel.h"
-
+#include "radial_grid/radial_grid_cuda_kernel.h"
+#include "grid_cluster/grid_cluster_cuda_kernel.h"
+#include "ellipsoidal_cluster/ellipsoidal_cluster_cuda_kernel.h"
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("attention_step1_forward_cuda", &attention_step1_forward_cuda, "attention_step1_forward_cuda");
@@ -17,4 +19,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("attention_step2_with_rel_pos_value_forward_cuda", &attention_step2_with_rel_pos_value_forward_cuda, "attention_step2_with_rel_pos_value_forward_cuda");
     m.def("attention_step2_with_rel_pos_value_backward_cuda", &attention_step2_with_rel_pos_value_backward_cuda, "attention_step2_with_rel_pos_value_backward_cuda");
     m.def("dot_prod_with_idx_all_forward_cuda", &dot_prod_with_idx_all_forward_cuda, "dot_prod_with_idx_all_forward_cuda");
+    m.def("compute_radial_grid_cuda", &compute_radial_grid_cuda, "compute_radial_grid_cuda");
+    m.def("grid_cluster", &grid_cluster, "grid_cluster");
+    m.def("ellipsoidal_cluster", &ellipsoidal_cluster, "ellipsoidal_cluster");
 }

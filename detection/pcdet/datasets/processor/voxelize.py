@@ -43,6 +43,42 @@ def grid_sample(pos, batch_index, size, start=None, return_p2v=True):
 
     return cluster, p2v_map, counts
 
+def grid_sample_ellipsoidal(pos, batch, size, start, return_p2v=True, return_counts=True, return_unique=False):
+    # pos: float [N, 3]
+    # batch: long [N]
+    # size: float [3, ]
+    # start: float [3, ] / None
+    # print("=============pos==================",pos)
+
+    cluster = voxel_grid_ellipsoidal(pos, batch, size, start=start) #[N, ]
+
+    if return_p2v == False and return_counts == False:
+        unique, cluster = torch.unique(cluster, sorted=True, return_inverse=True)
+        # unique2, cluster2 = torch.unique(cluster2, sorted=True, return_inverse=True)
+        # print("unique _ cluster ",unique.shape, cluster.shape)
+        # print("unique _ cluster 2 ",unique2.shape, cluster2.shape)
+        return cluster
+
+    unique, cluster, counts = torch.unique(cluster, sorted=True, return_inverse=True, return_counts=True)
+    # unique2, cluster2, counts2 = torch.unique(cluster2, sorted=True, return_inverse=True, return_counts=True)
+    # print("unique _ cluster _ count",unique.shape, cluster.shape, counts.shape)
+    # print("unique _ cluster _ count 2",unique2.shape, cluster2.shape, counts2.shape)
+
+    if return_p2v == False and return_counts == True:
+        return cluster, counts.max().item(), counts
+
+    # obtain p2v_map
+    n = unique.shape[0]
+    k = counts.max().item()
+    p2v_map = cluster.new_zeros(n, k) #[n, k]
+    mask = torch.arange(k).cuda().unsqueeze(0) < counts.unsqueeze(-1) #[n, k]
+    p2v_map[mask] = torch.argsort(cluster)
+
+    if return_unique:
+        return cluster, p2v_map, counts, unique
+
+    return cluster, p2v_map, counts
+
 def fnv_hash_vec(arr):
     """
     FNV64-1A
