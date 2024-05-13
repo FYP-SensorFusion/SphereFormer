@@ -1,0 +1,42 @@
+Nearest
+Clusters points in x together which are nearest to a given query point in y. batch_{x,y} vectors need to be sorted.
+
+import torch
+from torch_cluster import nearest
+
+x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
+batch_x = torch.tensor([0, 0, 0, 0])
+y = torch.Tensor([[-1, 0], [1, 0]])
+batch_y = torch.tensor([0, 0])
+cluster = nearest(x, y, batch_x, batch_y)
+print(cluster)
+tensor([0, 0, 1, 1])
+
+Sure, I’d be happy to explain this code. This script is written in Python and uses the PyTorch library, a popular open-source machine learning library, and the torch_cluster package, which provides a variety of clustering methods for PyTorch.
+
+Here’s a breakdown of what the code does:
+
+Import necessary libraries: The script starts by importing the necessary libraries - torch and nearest from torch_cluster.
+Define data points: The x and y tensors are defined. These represent sets of 2D points. The x tensor contains four points: (-1, -1), (-1, 1), (1, -1), and (1, 1). The y tensor contains two points: (-1, 0) and (1, 0).
+Define batch vectors: The batch_x and batch_y tensors are also defined. These are batch vectors that map each data point in x and y to a specific example in the batch. In this case, all points belong to the same example (0).
+Cluster data points: The nearest function from torch_cluster is used to cluster the points in x that are nearest to a given query point in y. The result is stored in the cluster tensor.
+Print the result: Finally, the cluster tensor is printed. The output tensor([0, 0, 1, 1]) indicates that the first two points in x are closest to the first point in y, and the last two points in x are closest to the second point in y.
+
+import torch
+from torch_cluster import nearest
+
+# Your point cloud
+xyz = torch.Tensor([[0., 0.,0.], [11., 9.,1], [2., 8.,3.], [2., 2.,1.], [8., 3.,6.]])
+
+# Let's assume you have some query points (centroids of clusters)
+# For the sake of this example, I'll just use random points
+y = torch.randn((10, 3))
+
+# Create batch vectors
+batch_xyz = torch.zeros(xyz.size(0), dtype=torch.long)  # All points in the same example
+batch_y = torch.zeros(y.size(0), dtype=torch.long)  # All query points in the same example
+
+# Find nearest cluster for each point in the point cloud
+cluster = nearest(xyz, y, batch_xyz, batch_y)
+
+print(cluster)

@@ -1,0 +1,21 @@
+
+// knn clusterring
+
+// https://github.com/unlimblue/KNN_CUDA
+import torch
+from knn_cuda import KNN
+
+# Make sure your CUDA is available.
+assert torch.cuda.is_available()
+
+# Your data
+x = torch.tensor([[0., 0.,0.], [11., 9.,1], [2., 8.,3.], [2., 2.,1.], [8., 3.,6.]]).cuda()
+
+# Create a KNN object
+knn = KNN(k=2, transpose_mode=True)
+
+# Perform KNN clustering
+distances, indices = knn(x, x)
+
+# The indices tensor contains the cluster assignments for each data point
+print(indices)

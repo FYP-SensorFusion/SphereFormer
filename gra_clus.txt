@@ -1,0 +1,40 @@
+
+import torch
+from torch_cluster import graclus_cluster
+
+row = torch.tensor([0, 1, 1, 2])
+col = torch.tensor([1, 0, 2, 1])
+weight = torch.tensor([1., 1., 1., 1.])  # Optional edge weights.
+
+cluster = graclus_cluster(row, col, weight)
+print(cluster)
+tensor([0, 0, 1])
+
+there are three inputs and two pairs of edges (ax,bx)
+
+
+row = [a1,a2,a3] colo = [b1,b2,b3]
+weights from ax to bx are wx
+
+those are represent in w= [w1,w2,w3]
+
+// test this code 
+import torch
+from torch_cluster import graclus_cluster
+from scipy.spatial import distance_matrix
+
+# Define the point cloud
+xyz = torch.tensor([[0., 0.,0.], [11., 9.,1], [2., 8.,3.], [2., 2.,1.], [8., 3.,6.]])
+
+# Calculate the distance matrix
+dist_matrix = torch.tensor(distance_matrix(xyz, xyz))
+
+# Get the row and col indices and the weights for the edges
+row, col = torch.triu_indices(xyz.size(0), xyz.size(0), offset=1)
+weights = dist_matrix[row, col]
+
+# Perform clustering
+cluster = graclus_cluster(row, col, weights)
+
+# Print the cluster assignments
+print(cluster)
